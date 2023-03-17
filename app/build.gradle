@@ -1,7 +1,9 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
+
 
 android {
     namespace 'com.example.latexdatarefiner'
@@ -30,6 +32,9 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
@@ -41,4 +46,19 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    /* excel file reader*/
+//    implementation 'org.apache.poi:poi:5.2.0'
+//    implementation 'org.apache.poi:poi-ooxml:5.2.0'
+    implementation 'net.sourceforge.jexcelapi:jxl:2.6.12'
+
+
+
+    /* room */
+    def android_room = "2.5.0"
+    implementation "androidx.room:room-runtime:$android_room"
+    testImplementation "androidx.room:room-testing:$android_room"
+    implementation "androidx.room:room-ktx:$android_room"
+    kapt "androidx.room:room-compiler:$android_room"
+
 }
