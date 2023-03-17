@@ -61,21 +61,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    suspend fun downloadImageAndSaveToStorage(url: String, fileName: String): String? {
+    private suspend fun downloadImageAndSaveToStorage(url: String, fileName: String): String? {
         return withContext(Dispatchers.IO) {
             try {
                 val dir =
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
                 val file = File(dir, fileName)
 
-                val input = URL(url).openStream()
-                val output = FileOutputStream(file)
-                input.use { input ->
-                    output.use { output ->
-                        input.copyTo(output)
+                if (!file.exists()) {
+                    val input = URL(url).openStream()
+                    val output = FileOutputStream(file)
+                    input.use { input ->
+                        output.use { output ->
+                            input.copyTo(output)
+                        }
                     }
                 }
-
                 file.absolutePath
             } catch (e: Exception) {
                 e.printStackTrace()
