@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import java.io.File
 
 
-class LatexDataAdapter(private val items: List<LatexData>) :
+class LatexDataAdapter(private val items: MutableList<LatexData>) :
     RecyclerView.Adapter<LatexDataAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -36,5 +36,11 @@ class LatexDataAdapter(private val items: List<LatexData>) :
 
     override fun getItemCount(): Int {
         return items.size
+    }
+
+    fun updateData(newData: List<LatexData>) {
+        items.clear()
+        items.addAll(newData)
+        notifyDataSetChanged()
     }
 }

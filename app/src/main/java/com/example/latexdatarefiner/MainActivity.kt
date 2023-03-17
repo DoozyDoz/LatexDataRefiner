@@ -17,8 +17,8 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
 
 
-
     private lateinit var binding: ActivityMainBinding
+    private lateinit var latexDataAdapter: LatexDataAdapter
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,11 +29,13 @@ class MainActivity : AppCompatActivity() {
         val latexDataDao = AppDatabase.getInstance(this).latexDataDao()
         val latexDataList = latexDataDao.getAll()
 
+        latexDataAdapter = LatexDataAdapter(mutableListOf())
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = latexDataAdapter
+
 
         latexDataList.observe(this) { list ->
-            val adapter = LatexDataAdapter(list)
-            binding.recyclerView.layoutManager = LinearLayoutManager(this)
-            binding.recyclerView.adapter = adapter
+            latexDataAdapter.updateData(list)
         }
 
         val inputStream = assets.open("data.xls")
