@@ -1,8 +1,13 @@
 package com.example.latexdatarefiner
 
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.view.View
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.latexdatarefiner.databinding.ActivityMainBinding
 import jxl.Workbook
@@ -17,6 +22,7 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
 
 
+    private val REQUEST_CODE_STORAGE_PERMISSIONS = 1001
     private lateinit var binding: ActivityMainBinding
     private lateinit var latexDataAdapter: LatexDataAdapter
 
@@ -44,18 +50,30 @@ class MainActivity : AppCompatActivity() {
         val sheet = workbook.getSheet(0)
         val numRows = sheet.rows
 
-        GlobalScope.launch {
-            for (i in 0 until numRows) {
-                val row = sheet.getRow(i)
-                val latexCode = row[0].contents
-                val link = row[1].contents
+        requestStoragePermissions {
+            GlobalScope.launch {
+                var downloadedImages = 0
+                for (i in 0 until numRows) {
+                    val row = sheet.getRow(i)
+                    val latexCode = row[0].contents
+                    val link = row[1].contents
 
-                val fileName = "image_${i}.png"
-                val imagePath = downloadImageAndSaveToStorage(link, fileName)
+                    val fileName = "image_${i}.png"
+                    val imagePath = downloadImageAndSaveToStorage(link, fileName)
 
-                if (imagePath != null) {
-                    val latexData = LatexData(id = 0, latexCode = latexCode, imagePath = imagePath)
-                    latexDataDao.insert(latexData)
+                    if (imagePath != null) {
+                        val latexData =
+                            LatexData(id = 0, latexCode = latexCode, imagePath = imagePath)
+                        latexDataDao.insert(latexData)
+                    }
+                    withContext(Dispatchers.Main) {
+                        downloadedImages++
+                        binding.progressBar.progress =
+                            (downloadedImages.toFloat() / numRows.toFloat() * 100).toInt()
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    binding.progressBar.visibility = View.GONE
                 }
             }
         }
@@ -83,6 +101,50 @@ class MainActivity : AppCompatActivity() {
                 null
             }
         }
+    }
+
+    private fun requestStoragePermissions(onPermissionGranted: () -> Unit) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_CODE_STORAGE_PERMISSIONS
+            )
+        } else {
+            // Permissions already granted, proceed with your app's functionality
+            onPermissionGranted()
+        }
+    }
+
+    private var onPermissionGranted: (() -> Unit)? = null
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            REQUEST_CODE_STORAGE_PERMISSIONS -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted, proceed with your app's functionality
+                    onPermissionGranted?.invoke()
+                } else {
+                    // Permission denied, show a message or handle the denial as appropriate
+                    Toast.makeText(this, "Storage permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        onPermissionGranted = null
+        super.onDestroy()
     }
 
 
