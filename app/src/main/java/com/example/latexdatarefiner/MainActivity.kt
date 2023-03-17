@@ -1,5 +1,6 @@
 package com.example.latexdatarefiner
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -8,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.latexdatarefiner.databinding.ActivityMainBinding
 import jxl.Workbook
@@ -35,8 +37,12 @@ class MainActivity : AppCompatActivity() {
         val latexDataDao = AppDatabase.getInstance(this).latexDataDao()
         val latexDataList = latexDataDao.getAll()
 
-        latexDataAdapter = LatexDataAdapter(mutableListOf())
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        latexDataAdapter = LatexDataAdapter(mutableListOf()){
+            val intent = Intent(this, DetailActivity::class.java)
+            intent.putExtra(DetailActivity.EXTRA_LATEX_DATA, it)
+            startActivity(intent)
+        }
+        binding.recyclerView.layoutManager = GridLayoutManager(this, 2)
         binding.recyclerView.adapter = latexDataAdapter
 
 
