@@ -13,11 +13,9 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.LatexDataRefiner"
+        android:theme="@style/AppTheme"
         tools:targetApi="31">
-        <activity
-            android:name=".DetailActivity"
-            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -27,6 +25,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".LatexDetailsActivity"
+            android:exported="true" />
     </application>
 
 </manifest>

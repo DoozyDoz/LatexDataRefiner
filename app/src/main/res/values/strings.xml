@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Latex Data Refiner</string>
+    <string name="test_question">G</string>
+    <string name="replace_text">$\\mathrm{ %1$s }$</string>
+    <string name="replace_function">$ \\colorbox{#eeeeee}{ %1$s }$</string>
+    <string name="replace_bold"> \\bold{ %1$s }</string>
+    <string name="replace_center">$$  %1$s $$</string>
+    <string name="replace_indent">$\\space$</string>
+    <string name="replace_return">$\\\\$</string>
 </resources>
