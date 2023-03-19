@@ -75,7 +75,7 @@ class LatexDetailsActivity : AppCompatActivity() {
     }
 
     companion object {
-        var sQuestion: Question? = null
+        var sQuestionId: String? = null
         var sImage: String? = null
         val tabIcon = intArrayOf(R.drawable.ic_katex, R.drawable.ic_latex)
     }

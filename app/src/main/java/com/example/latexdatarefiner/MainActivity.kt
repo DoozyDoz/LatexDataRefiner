@@ -37,8 +37,7 @@ class MainActivity : AppCompatActivity() {
         val latexDataList = latexDataDao.getAll()
 
         latexDataAdapter = LatexDataAdapter(mutableListOf()){
-            val question = Question(it.latexCode,1,1,null,null,null,"","",false)
-            LatexDetailsActivity.sQuestion = question
+            LatexDetailsActivity.sQuestionId = it.id.toString()
             LatexDetailsActivity.sImage = it.imagePath
             val intent = Intent(this, LatexDetailsActivity::class.java)
             startActivity(intent)
@@ -70,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
                     if (imagePath != null) {
                         val latexData =
-                            LatexData(id = 0, latexCode = latexCode, imagePath = imagePath)
+                            LatexData(id = 0, latexCode = latexCode, imagePath = imagePath, katexCode = "")
                         latexDataDao.insert(latexData)
                     }
                     withContext(Dispatchers.Main) {

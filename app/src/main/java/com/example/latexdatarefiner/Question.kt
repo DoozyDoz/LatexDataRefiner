@@ -17,5 +17,4 @@ data class Question(
 ) {
     @field:Json(name = "_id")
     var id: String? = null
-
 }

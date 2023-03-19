@@ -4,23 +4,19 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
-import android.telecom.Call
 import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnTouchListener
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import com.example.latexdatarefiner.databinding.FragmentKatexBinding
-import katex.hourglass.`in`.mathlib.MathView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.*
@@ -29,7 +25,7 @@ import java.util.stream.Collectors
 
 
 class KatexFragment : Fragment(), View.OnClickListener {
-    private var mQuestion: Question? = null
+    var mLatexData: LatexData? = null
     var mQuestionService: QuestionService? = null
 
     private val binding get() = _binding!!
@@ -51,19 +47,21 @@ class KatexFragment : Fragment(), View.OnClickListener {
     }
 
     private fun setupUI() {
+        val latexDataId =
+            LatexDetailsActivity.sQuestionId // Replace this with the actual ID you want to fetch
+        val dao = AppDatabase.getInstance(requireContext()).latexDataDao()
+
+        mLatexData = runBlocking {
+            dao.getLatexDataById(latexDataId!!.toInt())
+        }
+
         mQuestionService = APIUtils.questionService
-        mQuestion = LatexDetailsActivity.sQuestion
-        if (mQuestion!!.katex_question!!.isNotEmpty()) {
-            if (mQuestion!!.katex_question!!.isNotEmpty()) {
-                binding.tvKatex.setText(mQuestion!!.katex_question)
-                binding.btnQuestion.isEnabled = false
-                binding.btnAnswer.isEnabled = false
-            } else {
-                binding.tvKatex.setText(mQuestion!!.answer)
-                binding.btnQuestion.isEnabled = false
-            }
+        if (mLatexData!!.katexCode.isNotEmpty()) {
+            binding.tvKatex.setText(mLatexData!!.katexCode)
+            binding.btnQuestion.isEnabled = true
+            binding.btnAnswer.isEnabled = false
         } else {
-            binding.tvKatex.setText(mQuestion!!.text)
+            binding.tvKatex.setText(mLatexData!!.latexCode)
             binding.btnAnswer.isEnabled = false
         }
 
@@ -155,25 +153,25 @@ class KatexFragment : Fragment(), View.OnClickListener {
 
     private fun replaceSelection(place_holder: Int, selectedText: String) {
         //https://stackoverflow.com/a/20887690/8872691
-        val inputString = binding.tvKatex!!.text.toString()
+        val inputString = binding.tvKatex.text.toString()
         val res = resources
         val modifiedString = res.getString(place_holder, selectedText)
         val selectionModifiedString = inputString.replace(selectedText, modifiedString)
-        binding.tvKatex!!.setText(selectionModifiedString)
+        binding.tvKatex.setText(selectionModifiedString)
     }
 
     private val selection: String
-        private get() {
-            val startSelection = binding.tvKatex!!.selectionStart
-            val endSelection = binding.tvKatex!!.selectionEnd
-            return binding.tvKatex!!.text.toString().substring(startSelection, endSelection)
+        get() {
+            val startSelection = binding.tvKatex.selectionStart
+            val endSelection = binding.tvKatex.selectionEnd
+            return binding.tvKatex.text.toString().substring(startSelection, endSelection)
         }
 
     private fun replaceSelectionWith(textToInsert: String) {
-        val start = Math.max(binding.tvKatex!!.selectionStart, 0)
-        val end = Math.max(binding.tvKatex!!.selectionEnd, 0)
-        binding.tvKatex!!.text.replace(
-            Math.min(start, end), Math.max(start, end),
+        val start = binding.tvKatex.selectionStart.coerceAtLeast(0)
+        val end = binding.tvKatex.selectionEnd.coerceAtLeast(0)
+        binding.tvKatex.text.replace(
+            start.coerceAtMost(end), start.coerceAtLeast(end),
             textToInsert, 0, textToInsert.length
         )
     }
@@ -185,14 +183,10 @@ class KatexFragment : Fragment(), View.OnClickListener {
     override fun onClick(view: View) {
         when (view.id) {
             R.id.btn_question -> {
-                mQuestion!!.katex_question = (binding.tvKatex.text.toString())
-                updateQuestion(mQuestion!!.id, mQuestion)
+                val updatedLatexData = mLatexData!!.copy(katexCode = binding.tvKatex.text.toString())
+                updateQuestion(updatedLatexData)
             }
-            R.id.btn_answer -> {
-                mQuestion!!.katex_answer = (binding.tvKatex.text.toString())
-                mQuestion!!.edited = true
-                updateQuestion(mQuestion!!.id, mQuestion)
-            }
+
             R.id.btn_return -> replaceSelectionWith(resources.getString(R.string.replace_return))
             R.id.btn_indent -> replaceSelectionWith(resources.getString(R.string.replace_indent))
             R.id.btn_center -> {
@@ -214,24 +208,29 @@ class KatexFragment : Fragment(), View.OnClickListener {
         }
     }
 
-    fun updateQuestion(id: String?, question: Question?) {
-        val call = mQuestionService!!.updateQuestion(id, question)
-        call?.enqueue(object : Callback<Question?> {
-            override fun onResponse(
-                call: retrofit2.Call<Question?>,
-                response: Response<Question?>
-            ) {
-                if (response.isSuccessful) {
-                    Toast.makeText(context, "Question updated successfully!", Toast.LENGTH_SHORT)
-                        .show()
-                    activity!!.finish()
-                }
-            }
+    fun updateQuestion(question: LatexData?) {
+//        val call = mQuestionService!!.updateQuestion(id, question)
+//        call?.enqueue(object : Callback<Question?> {
+//            override fun onResponse(
+//                call: retrofit2.Call<Question?>,
+//                response: Response<Question?>
+//            ) {
+//                if (response.isSuccessful) {
+//                    Toast.makeText(context, "Question updated successfully!", Toast.LENGTH_SHORT)
+//                        .show()
+//                    activity!!.finish()
+//                }
+//            }
+//
+//            override fun onFailure(call: retrofit2.Call<Question?>, t: Throwable) {
+//                Log.e("ERROR: ", t.message!!)
+//            }
+//        })
 
-            override fun onFailure(call: retrofit2.Call<Question?>, t: Throwable) {
-                Log.e("ERROR: ", t.message!!)
-            }
-        })
+        CoroutineScope(Dispatchers.IO).launch {
+            val dao = AppDatabase.getInstance(requireContext()).latexDataDao()
+            dao.update(question!!)
+        }
     }
 
     fun createQuestion(question: Question?) {
