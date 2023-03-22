@@ -78,6 +78,12 @@ class KatexFragment : Fragment(), View.OnClickListener {
             }
             false
         }
+
+//        binding.tvKatex.setOnLongClickListener {
+//            // Return true to consume the long click event and prevent the context menu from showing
+//            true
+//        }
+
         binding.btnRun.setOnClickListener {
             binding.kvAnswer.visibility = View.VISIBLE
             binding.bgImage.visibility = View.GONE
@@ -92,8 +98,8 @@ class KatexFragment : Fragment(), View.OnClickListener {
                     resources.getString(R.string.replace_text, decorateSelection(selectedText))
                 val start = Math.max(binding.tvKatex.getSelectionStart(), 0)
                 val end = Math.max(binding.tvKatex.getSelectionEnd(), 0)
-                binding.tvKatex.getText().replace(
-                    Math.min(start, end), Math.max(start, end),
+                binding.tvKatex.text!!.replace(
+                    start.coerceAtMost(end), start.coerceAtLeast(end),
                     modifiedString, 0, modifiedString.length
                 )
             }
@@ -155,25 +161,25 @@ class KatexFragment : Fragment(), View.OnClickListener {
 
     private fun replaceSelection(place_holder: Int, selectedText: String) {
         //https://stackoverflow.com/a/20887690/8872691
-        val inputString = binding.tvKatex!!.text.toString()
+        val inputString = binding.tvKatex.text.toString()
         val res = resources
         val modifiedString = res.getString(place_holder, selectedText)
         val selectionModifiedString = inputString.replace(selectedText, modifiedString)
-        binding.tvKatex!!.setText(selectionModifiedString)
+        binding.tvKatex.setText(selectionModifiedString)
     }
 
     private val selection: String
         private get() {
-            val startSelection = binding.tvKatex!!.selectionStart
-            val endSelection = binding.tvKatex!!.selectionEnd
-            return binding.tvKatex!!.text.toString().substring(startSelection, endSelection)
+            val startSelection = binding.tvKatex.selectionStart
+            val endSelection = binding.tvKatex.selectionEnd
+            return binding.tvKatex.text.toString().substring(startSelection, endSelection)
         }
 
     private fun replaceSelectionWith(textToInsert: String) {
-        val start = Math.max(binding.tvKatex!!.selectionStart, 0)
-        val end = Math.max(binding.tvKatex!!.selectionEnd, 0)
-        binding.tvKatex!!.text.replace(
-            Math.min(start, end), Math.max(start, end),
+        val start = binding.tvKatex.selectionStart.coerceAtLeast(0)
+        val end = binding.tvKatex.selectionEnd.coerceAtLeast(0)
+        binding.tvKatex.text?.replace(
+            start.coerceAtMost(end), start.coerceAtLeast(end),
             textToInsert, 0, textToInsert.length
         )
     }
