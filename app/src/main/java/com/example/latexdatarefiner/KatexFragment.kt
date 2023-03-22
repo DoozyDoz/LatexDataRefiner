@@ -76,6 +76,12 @@ class KatexFragment : Fragment(), View.OnClickListener {
             }
             false
         }
+
+//        binding.tvKatex.setOnLongClickListener {
+//            // Return true to consume the long click event and prevent the context menu from showing
+//            true
+//        }
+
         binding.btnRun.setOnClickListener {
             binding.kvAnswer.visibility = View.VISIBLE
             binding.bgImage.visibility = View.GONE
@@ -90,8 +96,8 @@ class KatexFragment : Fragment(), View.OnClickListener {
                     resources.getString(R.string.replace_text, decorateSelection(selectedText))
                 val start = Math.max(binding.tvKatex.getSelectionStart(), 0)
                 val end = Math.max(binding.tvKatex.getSelectionEnd(), 0)
-                binding.tvKatex.getText().replace(
-                    Math.min(start, end), Math.max(start, end),
+                binding.tvKatex.text!!.replace(
+                    start.coerceAtMost(end), start.coerceAtLeast(end),
                     modifiedString, 0, modifiedString.length
                 )
             }
@@ -162,6 +168,7 @@ class KatexFragment : Fragment(), View.OnClickListener {
 
     private val selection: String
         get() {
+
             val startSelection = binding.tvKatex.selectionStart
             val endSelection = binding.tvKatex.selectionEnd
             return binding.tvKatex.text.toString().substring(startSelection, endSelection)
@@ -170,7 +177,8 @@ class KatexFragment : Fragment(), View.OnClickListener {
     private fun replaceSelectionWith(textToInsert: String) {
         val start = binding.tvKatex.selectionStart.coerceAtLeast(0)
         val end = binding.tvKatex.selectionEnd.coerceAtLeast(0)
-        binding.tvKatex.text.replace(
+
+        binding.tvKatex.text?.replace(
             start.coerceAtMost(end), start.coerceAtLeast(end),
             textToInsert, 0, textToInsert.length
         )
