@@ -31,12 +31,11 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <EditText
+                <com.example.latexdatarefiner.NoContextMenuEditText
                     android:id="@+id/tv_katex"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/spacing_middle"
-
                     android:background="@drawable/txt_area_dark_yellow"
                     android:gravity="top"
                     android:hint="Katex"
